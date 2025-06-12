@@ -390,9 +390,33 @@ Valor del registro 100 despues de normalizacion
 
 La eleccion de usar `float32` en lugar de `float64` viene dada por las siguientes razones:
 
-1- float32 ocupa la mitad de la memoria
-2- float32 tiene capacidad para 8 digitos de precision, mas que suficiente
-3- Librerias como tensorflow estan optimizadas para hacer calculos con float32
+1- `float32` ocupa la mitad de la memoria
+2- `float32` tiene capacidad para 8 digitos de precision, mas que suficiente
+3- Librerias como tensorflow estan optimizadas para hacer calculos con `float32`
+
+Forma final del `main.py`
+
+```
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+
+# carga del dataset
+(X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
+
+# aplanamiento de targets
+Y_train = Y_train.flatten()
+Y_test = Y_test.flatten()
+
+# division del conjunto de datos
+X_val, X_test, Y_val, Y_test = train_test_split(X_test, Y_test, random_state=42, stratify=Y_test, test_size=.5)
+
+# normalizacion
+
+X_train = X_train.astype("float32") / 255.0
+X_test = X_test.astype("float32") / 255.0
+X_val = X_val.astype("float32") / 255.0
+
+```
 
 ## Entrenamiento
 

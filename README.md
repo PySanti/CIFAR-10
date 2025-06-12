@@ -121,7 +121,7 @@ En cuanto a las imagenes, se ven asi:
 
 ![Imagen no encontrada](./images/image_1.png)
 
-Como vemos, son muy pequenias (lo cual tiene sentido por que la resolucion es de `32 x 32`).
+Se ven tan mal por que son imagenes de `32 x 32` pixeles, entonces al agrandarlas se ven borrosas.
 
 ## Entrenamiento
 

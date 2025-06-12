@@ -243,6 +243,157 @@ Obtuvimos los siguientes resultados:
 
 ```
 
+### Normalizacion
+
+La idea de la normalizacion es hacer que todas las caracteristicas del vector de entrada (los pixeles), esten en el mismo rango de valores para no introducir sesgos en el modelo dada la escala de las caracteristicas.
+
+Para ello utilizamos el siguiente codigo:
+
+```
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+
+# carga del dataset
+(X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
+
+# aplanamiento de targets
+Y_train = Y_train.flatten()
+Y_test = Y_test.flatten()
+
+# division del conjunto de datos
+X_val, X_test, Y_val, Y_test = train_test_split(X_test, Y_test, random_state=42, stratify=Y_test, test_size=.5)
+
+# normalizacion
+print("Valor del registro 100 antes de normalizacion ")
+print(X_train[100])
+
+X_train = X_train.astype("float32") / 255.0
+
+print("Valor del registro 100 despues de normalizacion ")
+print(X_train[100])
+
+X_test = X_test.astype("float32") / 255.0
+X_val = X_val.astype("float32") / 255.0
+
+```
+
+Como sabemos que todos los pixeles tienen valores entre 0 y 255, al dividir entre 255 nos aseguramos de que todos los pixeles tengan valores entre 0 y 1.
+
+Obtuvimos los siguientes resultados:
+
+```
+
+Valor del registro 100 antes de normalizacion 
+
+[[[213 229 242]
+  [211 227 240]
+  [211 227 240]
+  ...
+  [151 174 206]
+  [151 174 206]
+  [149 172 204]]
+
+ [[214 229 241]
+  [212 227 239]
+  [212 227 239]
+  ...
+  [152 175 207]
+  [152 175 207]
+  [151 174 205]]
+
+ [[216 229 239]
+  [214 227 237]
+  [213 227 237]
+  ...
+  [153 176 206]
+  [153 176 206]
+  [151 174 204]]
+
+ ...
+
+ [[145 159 165]
+  [136 148 154]
+  [143 152 158]
+  ...
+  [216 217 206]
+  [196 197 191]
+  [183 183 182]]
+
+ [[139 153 159]
+  [129 142 148]
+  [129 139 145]
+  ...
+  [227 228 219]
+  [223 224 219]
+  [209 209 209]]
+
+ [[137 152 157]
+  [143 155 161]
+  [136 145 152]
+  ...
+  [209 209 203]
+  [217 217 213]
+  [228 228 226]]]
+
+Valor del registro 100 despues de normalizacion 
+
+[[[0.8352941  0.8980392  0.9490196 ]
+  [0.827451   0.8901961  0.9411765 ]
+  [0.827451   0.8901961  0.9411765 ]
+  ...
+  [0.5921569  0.68235296 0.80784315]
+  [0.5921569  0.68235296 0.80784315]
+  [0.58431375 0.6745098  0.8       ]]
+
+ [[0.8392157  0.8980392  0.94509804]
+  [0.83137256 0.8901961  0.9372549 ]
+  [0.83137256 0.8901961  0.9372549 ]
+  ...
+  [0.59607846 0.6862745  0.8117647 ]
+  [0.59607846 0.6862745  0.8117647 ]
+  [0.5921569  0.68235296 0.8039216 ]]
+
+ [[0.84705883 0.8980392  0.9372549 ]
+  [0.8392157  0.8901961  0.92941177]
+  [0.8352941  0.8901961  0.92941177]
+  ...
+  [0.6        0.6901961  0.80784315]
+  [0.6        0.6901961  0.80784315]
+  [0.5921569  0.68235296 0.8       ]]
+
+ ...
+
+ [[0.5686275  0.62352943 0.64705884]
+  [0.53333336 0.5803922  0.6039216 ]
+  [0.56078434 0.59607846 0.61960787]
+  ...
+  [0.84705883 0.8509804  0.80784315]
+  [0.76862746 0.77254903 0.7490196 ]
+  [0.7176471  0.7176471  0.7137255 ]]
+
+ [[0.54509807 0.6        0.62352943]
+  [0.5058824  0.5568628  0.5803922 ]
+  [0.5058824  0.54509807 0.5686275 ]
+  ...
+  [0.8901961  0.89411765 0.85882354]
+  [0.8745098  0.8784314  0.85882354]
+  [0.81960785 0.81960785 0.81960785]]
+
+ [[0.5372549  0.59607846 0.6156863 ]
+  [0.56078434 0.60784316 0.6313726 ]
+  [0.53333336 0.5686275  0.59607846]
+  ...
+  [0.81960785 0.81960785 0.79607844]
+  [0.8509804  0.8509804  0.8352941 ]
+  [0.89411765 0.89411765 0.8862745 ]]]
+```
+
+La eleccion de usar `float32` en lugar de `float64` viene dada por las siguientes razones:
+
+1- float32 ocupa la mitad de la memoria
+2- float32 tiene capacidad para 8 digitos de precision, mas que suficiente
+3- Librerias como tensorflow estan optimizadas para hacer calculos con float32
+
 ## Entrenamiento
 
 ## Evaluación

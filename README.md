@@ -624,6 +624,71 @@ Pensandolo detenidamente, me di cuenta de que el problema seguramente este en la
 
 ### Segundo intento de entrenamiento
 
-Para este intento modificaremos la representacion de los datos utilizando embeddings para nutrir mejor a la red.
+Para este intento, aumentamos el rango de busqueda de capas, tan solo para asegurarnos de que el problema esta en la representacion de los datos.
+
+Solo modificando la siguiente linea:
+
+```
+n_hidden_layers = hp.Int('n_hidden_layers', min_value=5, max_value=8, step=1)
+```
+
+Obtuvimos los siguientes resultados:
+
+```
+    Mejor combinacion de hiperparametros
+
+        {'n_hidden_layers': 8, 'learning_rate': 0.0001, 'layer_0_units': 360, 'layer_1_units': 432, 'layer_2_units': 264, 'layer_3_units': 24, 'layer_4_units': 384, 'layer_5_units': 216, 'layer_6_units': 264, 'layer_7_units': 168, 'tuner/epochs': 15, 'tuner/initial_epoch': 8, 'tuner/bracket': 3, 'tuner/round': 3, 'tuner/trial_id': '0015'}
+
+Epoch 1/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 26s 15ms/step - accuracy: 0.5984 - loss: 1.1234 - val_accuracy: 0.5276 - val_loss: 1.3496
+Epoch 2/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6093 - loss: 1.0979 - val_accuracy: 0.5250 - val_loss: 1.3681
+Epoch 3/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6183 - loss: 1.0786 - val_accuracy: 0.5306 - val_loss: 1.3567
+Epoch 4/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6274 - loss: 1.0430 - val_accuracy: 0.5196 - val_loss: 1.3765
+Epoch 5/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6384 - loss: 1.0182 - val_accuracy: 0.5310 - val_loss: 1.3759
+Epoch 6/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6451 - loss: 0.9911 - val_accuracy: 0.5292 - val_loss: 1.3892
+Epoch 7/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6592 - loss: 0.9586 - val_accuracy: 0.5358 - val_loss: 1.3953
+Epoch 8/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6659 - loss: 0.9380 - val_accuracy: 0.5228 - val_loss: 1.4391
+Epoch 9/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6723 - loss: 0.9157 - val_accuracy: 0.5378 - val_loss: 1.4178
+Epoch 10/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6864 - loss: 0.8748 - val_accuracy: 0.5344 - val_loss: 1.4273
+Epoch 11/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.6956 - loss: 0.8561 - val_accuracy: 0.5170 - val_loss: 1.4868
+Epoch 12/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7100 - loss: 0.8172 - val_accuracy: 0.5314 - val_loss: 1.5062
+Epoch 13/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7182 - loss: 0.7940 - val_accuracy: 0.5324 - val_loss: 1.4822
+Epoch 14/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7253 - loss: 0.7717 - val_accuracy: 0.5242 - val_loss: 1.5225
+Epoch 15/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7303 - loss: 0.7502 - val_accuracy: 0.5274 - val_loss: 1.5359
+Epoch 16/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7404 - loss: 0.7240 - val_accuracy: 0.5296 - val_loss: 1.5881
+Epoch 17/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7551 - loss: 0.6950 - val_accuracy: 0.5252 - val_loss: 1.6367
+Epoch 18/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7593 - loss: 0.6782 - val_accuracy: 0.5324 - val_loss: 1.6483
+Epoch 19/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 24s 15ms/step - accuracy: 0.7660 - loss: 0.6590 - val_accuracy: 0.5222 - val_loss: 1.6782
+Epoch 19: early stopping
+Restoring model weights from the end of the best epoch: 9.
+157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.5247 - loss: 1.4030 
 
 
+    Rendimiento del modelo para test
+
+    Loss: 1.3958772420883179
+    Accuracy: 0.532800018787384
+
+```
+
+![Imagen no encontrada](./images/image_3.png)
+
+Exactamente lo mismo.

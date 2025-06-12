@@ -3,7 +3,7 @@ from keras import layers
 
 def model_builder(hp):
     model = keras.Sequential()
-    n_hidden_layers = hp.Int('n_hidden_layers', min_value=1, max_value=3, step=1)
+    n_hidden_layers = hp.Int('n_hidden_layers', min_value=5, max_value=8, step=1)
     learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
 
     model.add(layers.Flatten(input_shape=(32,32,3)))

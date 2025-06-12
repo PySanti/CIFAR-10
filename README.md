@@ -121,7 +121,114 @@ En cuanto a las imagenes, se ven asi:
 
 ![Imagen no encontrada](./images/image_1.png)
 
-Se ven tan mal por que son imagenes de `32 x 32` pixeles, entonces al agrandarlas se ven borrosas.
+Como vemos, son muy pequenias (lo cual tiene sentido por que la resolucion es de `32 x 32`).
+
+
+
+### Aplanamiento de targets
+
+Por alguna razon, al cargar el dataset inicialmente, los targets vienen con el siguiente formato:
+
+```
+Y_train : [ [x], [y], [z] ...]
+```
+
+Usando el metodo `.flatten()` de numpy, los convertimos al siguiente formato:
+
+```
+Y_train : [x, y, z, ...]
+```
+
+Codigo:
+
+```
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+
+(X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
+print(f"""
+Forma inicial de Y_train: {Y_train}
+Forma inicial de Y_test: {Y_test}
+
+""")
+Y_train = Y_train.flatten()
+Y_test = Y_test.flatten()
+
+print(f"""
+Forma final de Y_train: {Y_train}
+Forma final de Y_test: {Y_test}
+""")
+
+```
+
+Resultado:
+
+```
+Forma inicial de Y_train: [[6]
+ [9]
+ [9]
+ ...
+ [9]
+ [1]
+ [1]]
+Forma inicial de Y_test: [[3]
+ [8]
+ [8]
+ ...
+ [5]
+ [1]
+ [7]]
+
+
+
+Forma final de Y_train: [6 9 9 ... 9 1 1]
+Forma final de Y_test: [3 8 8 ... 5 1 7]
+
+```
+
+### Division de conjunto de datos
+
+Se dividio el conjunto de `test` en `val-test`.
+
+Usando el siguiente codigo:
+
+```
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+
+# carga del dataset
+(X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
+
+# aplanamiento de targets
+Y_train = Y_train.flatten()
+Y_test = Y_test.flatten()
+
+# division del conjunto de datos
+X_val, X_test, Y_val, Y_test = train_test_split(X_test, Y_test, random_state=42, stratify=Y_test, test_size=.5)
+
+
+print(f"""
+
+    Shape del X_val : {X_val.shape}
+    Shape del Y_val : {Y_val.shape}
+
+    Shape del X_test : {X_test.shape}
+    Shape del Y_test : {Y_test.shape}
+""")
+
+
+```
+
+Obtuvimos los siguientes resultados:
+
+```
+    Shape del X_val : (5000, 32, 32, 3)
+    Shape del Y_val : (5000,)
+
+    Shape del X_test : (5000, 32, 32, 3)
+    Shape del Y_test : (5000,)
+
+```
 
 ## Entrenamiento
 

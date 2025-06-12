@@ -3,6 +3,7 @@ from tensorflow import keras
 from sklearn.model_selection import train_test_split
 import keras_tuner as kt
 from utils.model_builder import model_builder
+from utils.show_train_results import show_train_results
 
 # carga del dataset
 (X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
@@ -35,7 +36,6 @@ tuner.search(
     X_train,
     Y_train,
     validation_data=(X_val, Y_val),
-    verbose=2
 )
 
 
@@ -55,11 +55,11 @@ print(f"""
 
 
 early_stopping = keras.callbacks.EarlyStopping(
-    monitor='val_precision',   # Métrica a monitorear (puede ser 'val_accuracy')
-    patience=15,          # Número de épocas sin mejora antes de detener
+    monitor='val_accuracy',   # Métrica a monitorear (puede ser 'val_accuracy')
+    patience=10,          # Número de épocas sin mejora antes de detener
     restore_best_weights=True , # Restaura los pesos del mejor modelo
     mode="max",
-    verbose=1
+    verbose=2
 )
 
 
@@ -70,4 +70,13 @@ history = best_model.fit(
     callbacks=[early_stopping]
 )
 
-test_loss, test_accuracy = best_model.evaluate()
+test_loss, test_accuracy = best_model.evaluate(X_test, Y_test)
+print(f"""
+
+    Rendimiento del modelo para test
+
+    Loss: {test_loss}
+    Accuracy: {test_accuracy}
+""")
+
+show_train_results(history)

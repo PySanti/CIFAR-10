@@ -420,5 +420,210 @@ X_val = X_val.astype("float32") / 255.0
 
 ## Entrenamiento
 
-## Evaluación
+### Primer intento de entrenamiento
+
+Utilizando el siguiente codigo:
+
+```
+
+# utils/model_builder.py
+
+from tensorflow import keras
+from keras import layers
+
+def model_builder(hp):
+    model = keras.Sequential()
+    n_hidden_layers = hp.Int('n_hidden_layers', min_value=1, max_value=3, step=1)
+    learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
+
+    model.add(layers.Flatten(input_shape=(32,32,3)))
+
+    for i in range(n_hidden_layers):
+        n_units = hp.Int(f'layer_{i}_units', min_value=24, max_value=480, step=24)
+        #drop_rate = hp.Float(f'layer_{i}_drop', min_value=0.1, max_value=0.35, step=0.05)
+        #regu_cons = hp.Choice(f'layer_{i}_regu_cons', values=[1e-2, 1e-3, 1e-4, 1e-5])
+
+
+        model.add(layers.Dense(
+            units=n_units,
+            activation="relu",
+            #kernel_regularizer=keras.regularizers.l2(regu_cons)
+        ))
+        #model.add(layers.Dropout(rate=drop_rate))
+
+    model.add(layers.Dense(units=10, activation="softmax"))
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss="sparse_categorical_crossentropy",
+        metrics=['accuracy']
+    )
+    return model
+
+# main.py 
+
+
+from keras.src.backend.config import max_epochs
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+import keras_tuner as kt
+from utils.model_builder import model_builder
+from utils.show_train_results import show_train_results
+
+# carga del dataset
+(X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
+
+# aplanamiento de targets
+Y_train = Y_train.flatten()
+Y_test = Y_test.flatten()
+
+# division del conjunto de datos
+X_val, X_test, Y_val, Y_test = train_test_split(X_test, Y_test, random_state=42, stratify=Y_test, test_size=.5)
+
+# normalizacion
+
+X_train = X_train.astype("float32") / 255.0
+X_test = X_test.astype("float32") / 255.0
+X_val = X_val.astype("float32") / 255.0
+
+# entrenamiento
+
+tuner = kt.Hyperband(
+    model_builder,
+    objective='val_accuracy',
+    factor=2,
+    max_epochs=15,
+    project_name="CIFAR-10",
+    directory="train_results"
+)
+
+tuner.search(
+    X_train,
+    Y_train,
+    validation_data=(X_val, Y_val),
+)
+
+
+# Mejor modelo encontrado
+best_model = tuner.get_best_models(num_models=1)[0]
+
+# Resumen de los mejores hiperparámetros
+best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+
+
+
+print(f"""
+    Mejor combinacion de hiperparametros
+
+        {best_hps.values}
+""")
+
+
+early_stopping = keras.callbacks.EarlyStopping(
+    monitor='val_accuracy',   # Métrica a monitorear (puede ser 'val_accuracy')
+    patience=10,          # Número de épocas sin mejora antes de detener
+    restore_best_weights=True , # Restaura los pesos del mejor modelo
+    mode="max",
+    verbose=2
+)
+
+
+history = best_model.fit(
+    X_train, Y_train,
+    epochs=30,
+    validation_data=(X_val, Y_val),
+    callbacks=[early_stopping]
+)
+
+test_loss, test_accuracy = best_model.evaluate(X_test, Y_test)
+print(f"""
+
+    Rendimiento del modelo para test
+
+    Loss: {test_loss}
+    Accuracy: {test_accuracy}
+""")
+
+show_train_results(history)
+
+```
+
+Obtuvimos los siguientes resultados:
+
+
+```
+
+    Mejor combinacion de hiperparametros
+
+        {'n_hidden_layers': 3, 'learning_rate': 0.0001, 'layer_0_units': 432, 'layer_1_units': 288, 'layer_2_units': 312, 'tuner/epochs': 15, 'tuner/initial_epoch': 8, 'tuner/bracket': 3, 'tuner/round': 3, 'tuner/trial_id': '0015'}
+
+Epoch 1/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 21s 13ms/step - accuracy: 0.5981 - loss: 1.1384 - val_accuracy: 0.5328 - val_loss: 1.3181
+Epoch 2/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6067 - loss: 1.1176 - val_accuracy: 0.5290 - val_loss: 1.3389
+Epoch 3/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6173 - loss: 1.0859 - val_accuracy: 0.5240 - val_loss: 1.3328
+Epoch 4/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6242 - loss: 1.0665 - val_accuracy: 0.5348 - val_loss: 1.3156
+Epoch 5/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6365 - loss: 1.0429 - val_accuracy: 0.5280 - val_loss: 1.3443
+Epoch 6/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6447 - loss: 1.0101 - val_accuracy: 0.5284 - val_loss: 1.3425
+Epoch 7/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6520 - loss: 0.9906 - val_accuracy: 0.5318 - val_loss: 1.3526
+Epoch 8/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6605 - loss: 0.9687 - val_accuracy: 0.5412 - val_loss: 1.3297
+Epoch 9/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6689 - loss: 0.9359 - val_accuracy: 0.5380 - val_loss: 1.3422
+Epoch 10/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6736 - loss: 0.9234 - val_accuracy: 0.5402 - val_loss: 1.3525
+Epoch 11/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6846 - loss: 0.8998 - val_accuracy: 0.5378 - val_loss: 1.3744
+Epoch 12/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6900 - loss: 0.8791 - val_accuracy: 0.5284 - val_loss: 1.4196
+Epoch 13/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.6996 - loss: 0.8566 - val_accuracy: 0.5534 - val_loss: 1.3450
+Epoch 14/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.7106 - loss: 0.8295 - val_accuracy: 0.5272 - val_loss: 1.4295
+Epoch 15/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.7135 - loss: 0.8119 - val_accuracy: 0.5318 - val_loss: 1.4176
+Epoch 16/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.7219 - loss: 0.7906 - val_accuracy: 0.5416 - val_loss: 1.3935
+Epoch 17/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.7275 - loss: 0.7725 - val_accuracy: 0.5360 - val_loss: 1.4073
+Epoch 18/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.7383 - loss: 0.7503 - val_accuracy: 0.5340 - val_loss: 1.4236
+Epoch 19/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 19s 12ms/step - accuracy: 0.7460 - loss: 0.7279 - val_accuracy: 0.5394 - val_loss: 1.4522
+Epoch 20/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 19s 12ms/step - accuracy: 0.7507 - loss: 0.7088 - val_accuracy: 0.5414 - val_loss: 1.4360
+Epoch 21/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 19s 12ms/step - accuracy: 0.7576 - loss: 0.6933 - val_accuracy: 0.5444 - val_loss: 1.4756
+Epoch 22/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 19s 12ms/step - accuracy: 0.7626 - loss: 0.6774 - val_accuracy: 0.5398 - val_loss: 1.4727
+Epoch 23/30
+1563/1563 ━━━━━━━━━━━━━━━━━━━━ 19s 12ms/step - accuracy: 0.7761 - loss: 0.6452 - val_accuracy: 0.5332 - val_loss: 1.5279
+Epoch 23: early stopping
+Restoring model weights from the end of the best epoch: 13.
+157/157 ━━━━━━━━━━━━━━━━━━━━ 0s 3ms/step - accuracy: 0.5542 - loss: 1.3536 
+
+
+    Rendimiento del modelo para test
+
+    Loss: 1.348984718322754
+    Accuracy: 0.5514000058174133
+
+```
+
+![Imagen no encontrada](./images/image_2.png)
+
+Como vemos, resultados basante lamentables.
+
+Pensandolo detenidamente, me di cuenta de que el problema seguramente este en la forma en la cual se esta alimentando a la red. Al no estar utilizando ningun embedding, para la red, cada elemento del vector final es una caracteristica de cada imagen, dichos elementos no representan cada pixel de la imagen sino **el componente rgb de dicho pixel**.
+
+
+### Segundo intento de entrenamiento
+
+Para este intento modificaremos la representacion de los datos utilizando embeddings para nutrir mejor a la red.
+
 

@@ -123,7 +123,20 @@ En cuanto a las imagenes, se ven asi:
 
 Como vemos, son muy pequenias (lo cual tiene sentido por que la resolucion es de `32 x 32`).
 
+Cabe mencionar el mapa de targets:
 
+```
+0	airplane
+1	automobile
+2	bird
+3	cat
+4	deer
+5	dog
+6	frog
+7	horse
+8	ship
+9	truck
+```
 
 ### Aplanamiento de targets
 

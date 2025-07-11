@@ -692,3 +692,9 @@ Restoring model weights from the end of the best epoch: 9.
 ![Imagen no encontrada](./images/image_3.png)
 
 Exactamente lo mismo.
+
+
+
+El problema en este ejercicio es el hecho de que alcanzar buenas precisiones usando MLP es muy dificil dado que, si se piensa detenidamente, cada caracteristica de entrada a la red no sera una caracteristica final del evento imagen (un pixel) sino un componente de la caracteristica, esto agrega un grado de complejidad que un MLP no es capaz de detectar.
+
+Resolveremos este ejercicio mas adelante, cuando sepamos de DNN mas avanzadas.
